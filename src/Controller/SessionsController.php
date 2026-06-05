@@ -23,7 +23,14 @@ final class SessionsController extends AbstractController
             return $this->redirectToRoute("app_login");
         }
     
-        $sessions = $repo->getNextSessions(in_array("admin", $this->getUser()->getRoles()));
+        $sessions = $repo->getNextSessions();
+
+        if(!in_array("ROLE_ADMIN", $this->getUser()->getRoles()))
+        {
+            $sessions = array_filter($sessions, function ($item) {
+                return $item->isActive();
+            });
+        }
 
         $imgs =
         [
@@ -36,9 +43,12 @@ final class SessionsController extends AbstractController
             "/img/pexels-pavel-danilyuk-5858038.jpg"
         ];
 
-        for($i = 0 ; $i < count($sessions) ; $i++)
+        $index = 0;
+        foreach($sessions as $session)
         {
-            $sessions[$i]->img = $imgs[$i % 7];
+            $session->img = $imgs[$index % 7];
+
+            $index++;
         }
     
         return $this->render('sessions/index.html.twig', [
@@ -47,23 +57,24 @@ final class SessionsController extends AbstractController
     }
 
     #[Route('/sessions/add', name: 'add_session')]
-    public function add(EntityManagerInterface $em): Response
+    public function add(SessionRepository $repo, EntityManagerInterface $em): Response
     {
         if(!$this->getUser())
         {
             return $this->json(["message" => "Not authenticated"], 401);
         }
 
-        if(!in_array("admin", $this->getUser()->getRoles()))
+        if(!in_array("ROLE_ADMIN", $this->getUser()->getRoles()))
         {
             return $this->json(["message" => "Not admin"], 403);
         }
     
-        $start = new DateTimeImmutable();
+        $start = $repo->getLastDate();
+        $start = $start->setTimestamp($start->getTimestamp() + 24 * 3600);
         $start = $start->setTime(21, 30, 0);
         $startTS = $start->getTimestamp();
 
-        $end = new DateTimeImmutable();
+        $end = $start;
         $end = $end->setTime(22, 0, 0);
         $endTS = $end->getTimestamp();
 
@@ -106,7 +117,7 @@ final class SessionsController extends AbstractController
             return $this->redirectToRoute("app_login");
         }
 
-        if(!in_array("admin", $this->getUser()->getRoles()))
+        if(!in_array("ROLE_ADMIN", $this->getUser()->getRoles()))
         {
             return $this->redirectToRoute("app_sessions");
         }    

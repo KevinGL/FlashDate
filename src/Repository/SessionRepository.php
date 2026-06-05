@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Session;
+use DateError;
+use DateTimeImmutable;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -41,18 +43,27 @@ class SessionRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    public function getNextSessions(bool $admin): Array
+    public function getNextSessions(): Array
     {
         $now = new \DateTime();
     
         return $this->createQueryBuilder('s')
             ->where("s.startAt >= :now")
-            ->andWhere("s.isActive = true")
-            ->orWhere(":admin = true")
             ->setParameter('now', $now)
-            ->setParameter('admin', $admin)
             ->getQuery()
             ->getResult()
         ;
+    }
+
+    public function getLastDate()
+    {
+        $res = $this->createQueryBuilder('s')
+            ->orderBy("s.startAt", "DESC")
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    
+        return $res ? $res->getStartAt() : new DateTimeImmutable();
     }
 }
