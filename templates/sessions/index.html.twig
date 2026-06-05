@@ -1,0 +1,41 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Choisis ta prochaine session{% endblock %}
+
+{% block body %}
+
+<div>
+    <h1>Choisis ta prochaine session !</h1>
+
+    <ul>
+        {% for session in sessions %}
+            <li>
+                <div>
+                    <h3>Le {{ session.startAt | date }}</h3>
+                    {% if "admin" in app.user.roles %}
+                        <a href="{{ url('edit_session', {id: session.id}) }}">Modifier</a>
+                    {% endif %}
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+
+    {% if "admin" in app.user.roles %}
+        <button id="add">Ajouter les sessions des deux prochaines semaines</button>
+    {% endif %}
+</div>
+
+{% block javascripts %}
+    {{ importmap('app') }}
+    <script type="module">
+        import $ from 'jquery';
+        $(document).ready(function() {
+            //console.log('jQuery est bien chargé !');
+
+            $("#add").click(() => {
+                $.get("/sessions/add");
+            });
+        });
+    </script>
+{% endblock %}
+{% endblock %}

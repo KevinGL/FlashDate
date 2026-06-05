@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la session{% endblock %}
+
+{% block body %}
+
+<div>
+    {{ form_start(form) }}
+        {{ form_row(form.startAt) }}
+        {{ form_row(form.endAt) }}
+        {{ form_row(form.isActive) }}
+        {{ form_row(form.maxParticipants) }}
+    {{ form_end(form) }}
+
+    <a href="{{ url('app_sessions') }}">Retour aux sessions</a>
+</div>
+
+{% endblock %}
