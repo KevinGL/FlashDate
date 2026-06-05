@@ -40,4 +40,18 @@ class ParticipantRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+    public function alreadyBooked(int $userId, int $sessionId): bool
+    {
+        $res = $this->createQueryBuilder('p')
+            ->where('p.userId = :userId')
+            ->andWhere('p.sessionId = :sessionId')
+            ->setParameter('userId', $userId)
+            ->setParameter('sessionId', $sessionId)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+
+        return $res ? true : false;
+    }
 }

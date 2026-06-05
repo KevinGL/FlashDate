@@ -12,13 +12,27 @@
             <li class="w-full sm:w-1/3 {{ session.isActive == 0 ? 'opacity-50' : '' }}">
                 <div class="bg-white p-4 rounded-2xl shadow-lg border border-gray-100">
                     <img src="{{ session.img }}" class="w-full h-80 object-cover rounded-xl"/>
-                    <h3 class="mt-4 text-xl font-semibold text-gray-800">Le {{ session.startAt | date('d/m/Y à H:i') }}</h3>
-                    {% if "ROLE_ADMIN" in app.user.roles %}
-                        <a href="{{ url('edit_session', {id: session.id}) }}">Modifier</a>
+                    <h3 class="mt-4 text-xl font-semibold text-gray-800">{{ session.startAt | date('d/m, H:i') }}</h3>
+                    {% if not session.bookable %}
+                        <div class="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg text-center opacity-50">
+                            Session réservée ...
+                        </div>
+                    {% elseif session.participants | length >= session.maxParticipants %}
+                        <div class="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg text-center opacity-50">
+                            Plus de place malheureusement ...
+                        </div>
+                    {% else %}
+                        <button class="booking mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition" id="{{ session.id }}">
+                            Réserver
+                        </button>
                     {% endif %}
-                    <button class="mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
-                        Réserver
-                    </button>
+                    {% if "ROLE_ADMIN" in app.user.roles %}
+                        <a
+                            href="{{ url('edit_session', {id: session.id}) }}"
+                            class="block mt-4 w-full bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700 transition text-center">
+                            Modifier
+                        </a>
+                    {% endif %}
                 </div>
             </li>
         {% endfor %}
@@ -29,17 +43,52 @@
     {% endif %}
 </div>
 
+<div id="modal" class="bg-white shadow-lg border border-gray-100 rounded-xl w-full sm:w-1/2 absolute top-48 left-0 sm:left-1/4 pb-5 hidden">
+    <h2 class="text-xl font-semibold text-gray-800 text-center">C'est ok pour vous ?</h2>
+    <h3 class="text-md font-semibold text-gray-800 text-center">Une réservation est un engagement, assurez-vous d'être bien disponible</h3>
+    <div class="mt-10 flex flex-row justify-around">
+        <button class="mt-4 w-1/3 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition" id="confirm">Confirmer la réservation</button>
+        <button class="mt-4 w-1/3 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition" id="abort">Annuler</button>
+    </div>
+</div>
+
 {% block javascripts %}
     {{ importmap('app') }}
     <script type="module">
         import $ from 'jquery';
         $(document).ready(function() {
-            //console.log('jQuery est bien chargé !');
+            let idSession = 0;
 
             $("#add").click(() => {
                 $.get("/sessions/add").then(() => {
                     location.reload();
                 })
+            });
+
+            $(".booking").click((e) => {
+                const targetId = e.currentTarget.id;
+
+                if (!targetId) 
+                {
+                    return;
+                }
+
+                idSession = targetId;
+                $("#modal").show();
+            });
+
+            $("#abort").click((e) => {
+                $("#modal").hide();
+            });
+
+            $("#confirm").click(() => {
+                if(idSession > 0)
+                {
+                    $.get("/sessions/booking/" + idSession)
+                    .then(() => {
+                        location.reload();
+                    })
+                }
             });
         });
     </script>

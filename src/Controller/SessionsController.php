@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\Participant;
 use App\Entity\Session;
 use App\Form\SessionsFormType;
+use App\Repository\ParticipantRepository;
 use App\Repository\SessionRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -16,14 +18,14 @@ use Symfony\Component\Routing\Attribute\Route;
 final class SessionsController extends AbstractController
 {
     #[Route('/sessions', name: 'app_sessions')]
-    public function index(SessionRepository $repo): Response
+    public function index(SessionRepository $sessionsRepo, ParticipantRepository $partRepo): Response
     {
         if(!$this->getUser())
         {
             return $this->redirectToRoute("app_login");
         }
     
-        $sessions = $repo->getNextSessions();
+        $sessions = $sessionsRepo->getNextSessions();
 
         if(!in_array("ROLE_ADMIN", $this->getUser()->getRoles()))
         {
@@ -47,6 +49,7 @@ final class SessionsController extends AbstractController
         foreach($sessions as $session)
         {
             $session->img = $imgs[$index % 7];
+            $session->bookable = !$partRepo->alreadyBooked($this->getUser()->getId(), $session->getId());
 
             $index++;
         }
@@ -137,5 +140,41 @@ final class SessionsController extends AbstractController
         return $this->render('sessions/edit.html.twig', [
             'form' => $form
         ]);
+    }
+
+    #[Route('/sessions/booking/{id}', name: 'book_session')]
+    public function booking(SessionRepository $repo, ParticipantRepository $partRepo, EntityManagerInterface $em, int $id): Response
+    {
+        if(!$this->getUser())
+        {
+            return $this->json(["message" => "Not authenticated", 401]);
+        }
+
+        if(!in_array("ROLE_ADMIN", $this->getUser()->getRoles()))
+        {
+            return $this->json(["message" => "Forbidden", 403]);
+        }
+
+        if($partRepo->alreadyBooked($this->getUser()->getId(), $id))
+        {
+            return $this->json(["message" => "Forbidden", 403]);
+        }
+
+        $session = $repo->find($id);
+
+        if(count($session->getParticipants()) >= $session->getMaxParticipants())
+        {
+            return $this->json(["message" => "Forbidden", 403]);
+        }
+    
+        $participant = new Participant();
+
+        $participant->setUserId($this->getUser());
+        $participant->setSessionId($session);
+
+        $em->persist($participant);
+        $em->flush();
+    
+        return $this->json(["message" => "ok"], 200);
     }
 }
