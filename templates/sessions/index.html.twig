@@ -14,6 +14,7 @@
                     <h3>Le {{ session.startAt | date }}</h3>
                     {% if "admin" in app.user.roles %}
                         <a href="{{ url('edit_session', {id: session.id}) }}">Modifier</a>
+                        {{ session.isActive }}
                     {% endif %}
                 </div>
             </li>

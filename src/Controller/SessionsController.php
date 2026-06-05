@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -22,7 +23,7 @@ final class SessionsController extends AbstractController
             return $this->redirectToRoute("app_login");
         }
     
-        $sessions = $repo->getNextSessions();
+        $sessions = $repo->getNextSessions(in_array("admin", $this->getUser()->getRoles()));
     
         return $this->render('sessions/index.html.twig', [
             'sessions' => $sessions
@@ -82,10 +83,29 @@ final class SessionsController extends AbstractController
     }
 
     #[Route('/sessions/edit/{id}', name: 'edit_session')]
-    public function edit(SessionRepository $repo, int $id): Response
+    public function edit(SessionRepository $repo, EntityManagerInterface $em, Request $req, int $id): Response
     {
+        if(!$this->getUser())
+        {
+            return $this->redirectToRoute("app_login");
+        }
+
+        if(!in_array("admin", $this->getUser()->getRoles()))
+        {
+            return $this->redirectToRoute("app_sessions");
+        }    
+    
         $session = $repo->find($id);
         $form = $this->createForm(SessionsFormType::class, $session);
+        $form->handleRequest($req);
+
+        if($form->isSubmitted() && $form->isValid())
+        {
+            $em->persist($session);
+            $em->flush();
+
+            return $this->redirectToRoute("app_sessions");
+        }
     
         return $this->render('sessions/edit.html.twig', [
             'form' => $form

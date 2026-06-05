@@ -41,14 +41,16 @@ class SessionRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    public function getNextSessions(): Array
+    public function getNextSessions(bool $admin): Array
     {
         $now = new \DateTime();
     
         return $this->createQueryBuilder('s')
             ->where("s.startAt >= :now")
             ->andWhere("s.isActive = true")
+            ->orWhere(":admin = true")
             ->setParameter('now', $now)
+            ->setParameter('admin', $admin)
             ->getQuery()
             ->getResult()
         ;
