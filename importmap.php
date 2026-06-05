@@ -19,4 +19,11 @@ return [
     'jquery' => [
         'version' => '4.0.0',
     ],
+    'tailwindcss' => [
+        'version' => '4.3.0',
+    ],
+    'tailwindcss/index.min.css' => [
+        'version' => '4.3.0',
+        'type' => 'css',
+    ],
 ];

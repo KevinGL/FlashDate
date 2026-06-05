@@ -59,6 +59,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'userId', cascade: ['persist', 'remove'])]
     private ?Participant $participant = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $gender = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $search = null;
+
     public function __construct()
     {
         $this->conversations1 = new ArrayCollection();
@@ -255,6 +261,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         $this->participant = $participant;
+
+        return $this;
+    }
+
+    public function getGender(): ?string
+    {
+        return $this->gender;
+    }
+
+    public function setGender(string $gender): static
+    {
+        $this->gender = $gender;
+
+        return $this;
+    }
+
+    public function getSearch(): ?string
+    {
+        return $this->search;
+    }
+
+    public function setSearch(string $search): static
+    {
+        $this->search = $search;
 
         return $this;
     }

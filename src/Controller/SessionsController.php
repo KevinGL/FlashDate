@@ -24,6 +24,22 @@ final class SessionsController extends AbstractController
         }
     
         $sessions = $repo->getNextSessions(in_array("admin", $this->getUser()->getRoles()));
+
+        $imgs =
+        [
+            "/img/pexels-beniam-447198297-19480709.jpg",
+            "/img/pexels-cottonbro-9665611.jpg",
+            "/img/pexels-elletakesphotos-1058918.jpg",
+            "/img/pexels-etoile-3061668-6496368.jpg",
+            "/img/pexels-marek-piwnicki-3907296-13328054.jpg",
+            "/img/pexels-patrick-dziggel-2160051696-36548504.jpg",
+            "/img/pexels-pavel-danilyuk-5858038.jpg"
+        ];
+
+        for($i = 0 ; $i < count($sessions) ; $i++)
+        {
+            $sessions[$i]->img = $imgs[$i % 7];
+        }
     
         return $this->render('sessions/index.html.twig', [
             'sessions' => $sessions
