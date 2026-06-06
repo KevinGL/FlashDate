@@ -2,11 +2,11 @@
 <html>
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-        {% block stylesheets %}
-        {% endblock %}
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
 
         {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
         {% if frankenphpHotReload %}
@@ -17,11 +17,18 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
             body {
-                font-family: 'Inter', sans-serif;
+                font-family: 'Manrope', sans-serif;
+                background-color: #f1e7fe;
             }
         </style>
     </head>
     <body>
+        <div>
+            <h1 class="text-6xl text-white leading-tight text-center md:text-left">Flash Date</h1>
+            <p class="text-gray-500 text-lg text-center md:text-left">
+                Oubliez les swipes dans le vide ...
+            </p>
+        </div>
         {% block body %}{% endblock %}
     </body>
 </html>

@@ -41,7 +41,7 @@ class ParticipantRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-    public function alreadyBooked(int $userId, int $sessionId): bool
+    public function sessionBooked(int $userId, int $sessionId): bool
     {
         $res = $this->createQueryBuilder('p')
             ->where('p.userId = :userId')
@@ -53,5 +53,15 @@ class ParticipantRepository extends ServiceEntityRepository
         ;
 
         return $res ? true : false;
+    }
+
+    public function findByUser(int $userId): array
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.userId = :userId')
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getResult()
+        ;
     }
 }

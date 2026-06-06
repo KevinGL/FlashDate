@@ -49,7 +49,7 @@ final class SessionsController extends AbstractController
         foreach($sessions as $session)
         {
             $session->img = $imgs[$index % 7];
-            $session->bookable = !$partRepo->alreadyBooked($this->getUser()->getId(), $session->getId());
+            $session->bookable = !$partRepo->sessionBooked($this->getUser()->getId(), $session->getId());
 
             $index++;
         }
@@ -74,16 +74,17 @@ final class SessionsController extends AbstractController
     
         $start = $repo->getLastDate();
         $start = $start->setTimestamp($start->getTimestamp() + 24 * 3600);
-        $start = $start->setTime(21, 30, 0);
+        $start = $start->setTimeZone(new \DateTimeZone('Europe/Paris'));
+        $start = $start->setTime(19, 30, 0);
         $startTS = $start->getTimestamp();
 
         $end = $start;
-        $end = $end->setTime(22, 0, 0);
+        $end = $end->setTime(20, 0, 0);
         $endTS = $end->getTimestamp();
 
         for($i = 0 ; $i < 14 ; $i++)
         {
-            $date = new \DateTimeImmutable();
+            $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
             $date = $date->setTimestamp($startTS);
 
             $session = new Session();
@@ -150,12 +151,7 @@ final class SessionsController extends AbstractController
             return $this->json(["message" => "Not authenticated", 401]);
         }
 
-        if(!in_array("ROLE_ADMIN", $this->getUser()->getRoles()))
-        {
-            return $this->json(["message" => "Forbidden", 403]);
-        }
-
-        if($partRepo->alreadyBooked($this->getUser()->getId(), $id))
+        if($partRepo->sessionBooked($this->getUser()->getId(), $id))
         {
             return $this->json(["message" => "Forbidden", 403]);
         }
@@ -176,5 +172,59 @@ final class SessionsController extends AbstractController
         $em->flush();
     
         return $this->json(["message" => "ok"], 200);
+    }
+
+    #[Route('/sessions/booked', name: 'booked_session')]
+    public function booked(ParticipantRepository $partRepo)
+    {
+        if(!$this->getUser())
+        {
+            return $this->redirectToRoute("app_login");
+        }
+
+        $sessions = [];
+
+        $participants = $partRepo->findByUser($this->getUser()->getId());
+
+        $imgs =
+        [
+            "/img/pexels-beniam-447198297-19480709.jpg",
+            "/img/pexels-cottonbro-9665611.jpg",
+            "/img/pexels-elletakesphotos-1058918.jpg",
+            "/img/pexels-etoile-3061668-6496368.jpg",
+            "/img/pexels-marek-piwnicki-3907296-13328054.jpg",
+            "/img/pexels-patrick-dziggel-2160051696-36548504.jpg",
+            "/img/pexels-pavel-danilyuk-5858038.jpg"
+        ];
+
+        $index = 0;
+
+        foreach($participants as $part)
+        {
+            $session = $part->getSessionId();    
+        
+            $start = $session->getStartAt();
+            $start = $start->setTimeZone(new \DateTimeZone('Europe/Paris'));
+            $startTs = $start->getTimestamp();
+            $current = (new \DateTime('now', new \DateTimeZone('Europe/Paris')))->getTimestamp();
+            $end = $session->getEndAt();
+            $end = $end->setTimeZone(new \DateTimeZone('Europe/Paris'));
+            $endTs = $end->getTimestamp();
+
+            $session->joinable = $current >= $startTs && $current <= $endTs;
+            $session->img = $imgs[$index % 7];
+        
+            array_push($sessions, $part->getSessionId());
+
+            $index++;
+        }
+
+        return $this->render("sessions/booked.html.twig", ["sessions" => $sessions]);
+    }
+
+    #[Route('/sessions/join/{id}', name: 'join_session')]
+    public function join()
+    {
+        //
     }
 }

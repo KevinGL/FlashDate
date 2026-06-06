@@ -1,13 +1,13 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Choisis ta prochaine session{% endblock %}
+{% block title %}Sessions réservées{% endblock %}
 
 {% block body %}
 
 <div class="flex flex-col items-center">
     <div class="max-w-4xl mx-auto px-6 pt-12 pb-8">
         <h1 class="text-5xl md:text-6xl text-white leading-tight text-center md:text-left">
-            Choisis ta prochaine <br> session !
+            Sessions réservées
         </h1>
     </div>
 
@@ -17,35 +17,15 @@
                 <div class="bg-white p-4 rounded-3xl shadow-soft-lg border border-gray-100">
                     <img src="{{ session.img }}" class="w-full h-80 object-cover rounded-xl"/>
                     <h3 class="mt-4 text-xl font-semibold text-gray-800">{{ session.startAt | date('d/m, H:i', "Europe/Paris") }}</h3>
-                    {% if not session.bookable %}
-                        <div class="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg text-center opacity-50 cursor-not-allowed">
-                            Session réservée ...
-                        </div>
-                    {% elseif session.participants | length >= session.maxParticipants %}
-                        <div class="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg text-center opacity-50 cursor-not-allowed">
-                            Plus de place malheureusement ...
-                        </div>
-                    {% else %}
-                        <button class="booking mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition" id="{{ session.id }}">
-                            Réserver
+                    {% if session.joinable %}
+                        <button class="join mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition" id="{{ session.id }}">
+                            Rejoindre
                         </button>
-                    {% endif %}
-
-                    {% if "ROLE_ADMIN" in app.user.roles %}
-                        <a
-                            href="{{ url('edit_session', {id: session.id}) }}"
-                            class="block mt-4 w-full bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700 transition text-center">
-                            Modifier
-                        </a>
                     {% endif %}
                 </div>
             </li>
         {% endfor %}
     </ul>
-
-    {% if "ROLE_ADMIN" in app.user.roles %}
-        <button id="add">Ajouter les sessions des deux prochaines semaines</button>
-    {% endif %}
 </div>
 
 <div id="modal" class="w-full h-full fixed inset-0 bg-gray-900/50 hidden">

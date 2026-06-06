@@ -45,14 +45,27 @@ class SessionRepository extends ServiceEntityRepository
 
     public function getNextSessions(): Array
     {
-        $now = new \DateTime();
-    
-        return $this->createQueryBuilder('s')
+        $now = new \DateTime('now', new \DateTimeZone('Europe/Paris'));
+
+        $res = $this->createQueryBuilder('s')
             ->where("s.startAt >= :now")
             ->setParameter('now', $now)
             ->getQuery()
             ->getResult()
         ;
+
+        foreach($res as $r)
+        {
+            $start = $r->getStartAt();
+            $start = $start->setTimeZone(new \DateTimeZone('Europe/Paris'));
+            $r->setStartAt($start);
+
+            $end = $r->getEndAt();
+            $end = $end->setTimeZone(new \DateTimeZone('Europe/Paris'));
+            $r->setEndAt($end);
+        }
+    
+        return $res;
     }
 
     public function getLastDate()
@@ -64,6 +77,6 @@ class SessionRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
         ;
     
-        return $res ? $res->getStartAt() : new DateTimeImmutable();
+        return $res ? $res->getStartAt() : new DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
     }
 }
