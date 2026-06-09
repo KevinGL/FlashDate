@@ -26,14 +26,14 @@
                             Plus de place malheureusement ...
                         </div>
                     {% else %}
-                        <button class="booking mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition" id="{{ session.id }}">
+                        <button class="booking mt-4 w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition" id="{{ session.startAt | date('Y-m-d-H-i-s') }}">
                             Réserver
                         </button>
                     {% endif %}
 
                     {% if "ROLE_ADMIN" in app.user.roles %}
                         <a
-                            href="{{ url('edit_session', {id: session.id}) }}"
+                            href="{{ url('edit_session', {slug: session.startAt | date('Y-m-d-H-i-s')}) }}"
                             class="block mt-4 w-full bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700 transition text-center">
                             Modifier
                         </a>
@@ -89,7 +89,7 @@
             });
 
             $("#confirm").click(() => {
-                if(idSession > 0)
+                if(idSession)
                 {
                     $.get("/sessions/booking/" + idSession)
                     .then(() => {

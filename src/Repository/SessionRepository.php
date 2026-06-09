@@ -43,6 +43,40 @@ class SessionRepository extends ServiceEntityRepository
     //        ;
     //    }
 
+    private function slugToDate(string $slug): string
+    {
+        $params = explode('-', $slug);
+        return $params[0] . '-' . $params[1] . '-' . $params[2] . ' ' . $params[3] . ':' . $params[4] . ':' . $params[5];
+    }
+
+    public function findIdBySlug(string $slug): ?int
+    {
+        $date = $this->slugToDate($slug);        
+        $sessionDate = new \DateTime($date);
+
+        $res = $this->createQueryBuilder('s')
+            ->where("s.startAt = :date")
+            ->setParameter('date', $sessionDate)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+
+        return $res ? $res->getId() : null;
+    }
+
+    public function findBySlug(string $slug): ?Session
+    {
+        $date = $this->slugToDate($slug);        
+        $sessionDate = new \DateTime($date);
+
+        return $this->createQueryBuilder('s')
+            ->where("s.startAt = :date")
+            ->setParameter('date', $sessionDate)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+
     public function getNextSessions(): Array
     {
         $now = new \DateTime('now', new \DateTimeZone('Europe/Paris'));

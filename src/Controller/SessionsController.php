@@ -113,8 +113,8 @@ final class SessionsController extends AbstractController
         return $this->json(["message" => 'Sessions ajoutées'], 200);
     }
 
-    #[Route('/sessions/edit/{id}', name: 'edit_session')]
-    public function edit(SessionRepository $repo, EntityManagerInterface $em, Request $req, int $id): Response
+    #[Route('/sessions/edit/{slug}', name: 'edit_session')]
+    public function edit(SessionRepository $repo, EntityManagerInterface $em, Request $req, string $slug): Response
     {
         if(!$this->getUser())
         {
@@ -126,7 +126,7 @@ final class SessionsController extends AbstractController
             return $this->redirectToRoute("app_sessions");
         }    
     
-        $session = $repo->find($id);
+        $session = $repo->findBySlug($slug);
         $form = $this->createForm(SessionsFormType::class, $session);
         $form->handleRequest($req);
 
@@ -143,13 +143,15 @@ final class SessionsController extends AbstractController
         ]);
     }
 
-    #[Route('/sessions/booking/{id}', name: 'book_session')]
-    public function booking(SessionRepository $repo, ParticipantRepository $partRepo, EntityManagerInterface $em, int $id): Response
+    #[Route('/sessions/booking/{slug}', name: 'book_session')]
+    public function booking(SessionRepository $repo, ParticipantRepository $partRepo, EntityManagerInterface $em, string $slug): Response
     {
         if(!$this->getUser())
         {
             return $this->json(["message" => "Not authenticated", 401]);
         }
+
+        $id = $repo->findIdBySlug($slug);
 
         if($partRepo->sessionBooked($this->getUser()->getId(), $id))
         {
@@ -222,8 +224,8 @@ final class SessionsController extends AbstractController
         return $this->render("sessions/booked.html.twig", ["sessions" => $sessions]);
     }
 
-    #[Route('/sessions/join/{id}', name: 'join_session')]
-    public function join()
+    #[Route('/sessions/join/{slug}', name: 'join_session')]
+    public function join(string $slug)
     {
         //
     }
