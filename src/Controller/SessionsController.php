@@ -60,7 +60,7 @@ final class SessionsController extends AbstractController
     }
 
     #[Route('/sessions/add', name: 'add_session')]
-    public function add(SessionRepository $repo, EntityManagerInterface $em): Response
+    public function add(SessionRepository $repo, EntityManagerInterface $em, Request $req): Response
     {
         if(!$this->getUser())
         {
@@ -70,6 +70,11 @@ final class SessionsController extends AbstractController
         if(!in_array("ROLE_ADMIN", $this->getUser()->getRoles()))
         {
             return $this->json(["message" => "Not admin"], 403);
+        }
+
+        if($req->headers->get('X-Requested-With') !== 'XMLHttpRequest')
+        {
+            return $this->json(["message" => "Forbidden", 403]);
         }
     
         $start = $repo->getLastDate();
@@ -124,7 +129,7 @@ final class SessionsController extends AbstractController
         if(!in_array("ROLE_ADMIN", $this->getUser()->getRoles()))
         {
             return $this->redirectToRoute("app_sessions");
-        }    
+        }
     
         $session = $repo->findBySlug($slug);
         $form = $this->createForm(SessionsFormType::class, $session);
@@ -144,11 +149,16 @@ final class SessionsController extends AbstractController
     }
 
     #[Route('/sessions/booking/{slug}', name: 'book_session')]
-    public function booking(SessionRepository $repo, ParticipantRepository $partRepo, EntityManagerInterface $em, string $slug): Response
+    public function booking(Request $req, SessionRepository $repo, ParticipantRepository $partRepo, EntityManagerInterface $em, string $slug): Response
     {
         if(!$this->getUser())
         {
             return $this->json(["message" => "Not authenticated", 401]);
+        }
+
+        if($req->headers->get('X-Requested-With') !== 'XMLHttpRequest')
+        {
+            return $this->json(["message" => "Forbidden", 403]);
         }
 
         $id = $repo->findIdBySlug($slug);
