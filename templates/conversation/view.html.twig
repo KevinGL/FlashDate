@@ -26,26 +26,38 @@
         $(document).ready(function() {
             const url = "{{ ws_url }}";
             const convId = "{{ conv.slug }}";
-            const userId = "{{ userId }}";
+            const userSlug = "{{ userSlug }}";
             const username = "{{ username }}";
 
             const socket = new WebSocket(url);
 
             socket.onopen = () => {
-                socket.send(JSON.stringify({type: 'connect', uid: convId, userId}));
+                socket.send(JSON.stringify({type: 'connect', uid: convId, userSlug, username}));
             };
 
             socket.onerror = (err) => console.error('Erreur de connexion :', err);
 
             $("#send").click(() => {
-                socket.send(JSON.stringify({type: 'send', uid: convId, message: $("#content")[0].value, username}));
-                $("#content")[0].value = "";
+                $.ajax({
+                    url: "{{ url('add_message') }}",
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        slug: convId,
+                        message: $("#content").val()
+                    }),
+                    success: function(response) {
+                        socket.send(JSON.stringify({type: 'send', uid: convId, userSlug, message: $("#content").val()}));
+                        $("#content").val("");
+                    }
+                });
             })
 
             socket.onmessage = (message) => {
                 //console.log(JSON.parse(message.data).message);
                 const data = JSON.parse(message.data);
-                $("#conv").append('<li><p>' + data.username + ' : ' + data.message + '</p></li>');
+                const $li = $('<li>').text(data.username + ' : ' + data.message);
+                $("#conv").append($li);
             };
         })
     </script>

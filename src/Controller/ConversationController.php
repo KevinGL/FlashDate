@@ -4,7 +4,6 @@ namespace App\Controller;
 
 use App\Entity\Conversation;
 use App\Entity\Message;
-use App\Form\MessageType;
 use App\Repository\ConversationRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -13,8 +12,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Mercure\Update;
-use Symfony\Component\Mercure\HubInterface;
 
 final class ConversationController extends AbstractController
 {
@@ -91,7 +88,7 @@ final class ConversationController extends AbstractController
     }
 
     #[Route('/conversations/view/{slug}', name: 'get_conversation')]
-    public function view(ConversationRepository $repo, UserRepository $userRepo, string $slug, Request $req, HubInterface $hub): Response
+    public function view(ConversationRepository $repo, UserRepository $userRepo, string $slug): Response
     {
         if(!$this->getUser())
         {
@@ -100,7 +97,7 @@ final class ConversationController extends AbstractController
 
         $conv = $repo->findBySlug($slug);
 
-        if($conv->getUser1Id() !== $this->getUser() && $conv->getUser2Id() != $this->getUser())
+        if($conv->getUser1Id() !== $this->getUser() && $conv->getUser2Id() !== $this->getUser())
         {
             return $this->redirectToRoute("app_conversations");
         }
@@ -115,6 +112,42 @@ final class ConversationController extends AbstractController
             $conv->interlocutor = $userRepo->findNameById($conv->getUser2Id());
         }
 
-        return $this->render("conversation/view.html.twig", ["conv" => $conv, "ws_url" => $_ENV["WEB_SOCKET_URL"], "userId" => $this->getUser()->getId(), "username" => $this->getUser()->getUsername()]);
+        $userSlug = hash("sha256", $this->getUser()->getId());
+
+        return $this->render("conversation/view.html.twig", ["conv" => $conv, "ws_url" => $_ENV["WEB_SOCKET_URL"], "userSlug" => $userSlug, "username" => $this->getUser()->getUsername()]);
+    }
+
+    #[Route('/conversations/add_message', name: 'add_message')]
+    public function addMessage(EntityManagerInterface $em, ConversationRepository $repo, Request $req): Response
+    {
+        if(!$this->getUser())
+        {
+            return $this->redirectToRoute("app_login");
+        }
+
+        if($req->headers->get('X-Requested-With') !== 'XMLHttpRequest')
+        {
+            return $this->json(["message" => "Forbidden"], 403);
+        }
+
+        $body = json_decode($req->getContent(), true);
+
+        $conv = $repo->findBySlug($body["slug"]);
+
+        if(!$conv)
+        {
+            return $this->json(["message" => "Error"], 500);
+        }
+
+        $message = new Message();
+        $message->setConversationId($conv);
+        $message->setUser($this->getUser());
+        $message->setCreatedAt(new \DateTimeImmutable());
+        $message->setContent($body["message"]);
+
+        $em->persist($message);
+        $em->flush();
+
+        return $this->json(["message" => "ok"], 200);
     }
 }

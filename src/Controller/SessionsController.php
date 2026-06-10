@@ -158,7 +158,7 @@ final class SessionsController extends AbstractController
 
         if($req->headers->get('X-Requested-With') !== 'XMLHttpRequest')
         {
-            return $this->json(["message" => "Forbidden", 403]);
+            return $this->json(["message" => "Forbidden"], 403);
         }
 
         $id = $repo->findIdBySlug($slug);

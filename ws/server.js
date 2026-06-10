@@ -13,10 +13,21 @@ wss.on('connection', (ws) => {
         
         if(data.type === "connect")
         {
-            //console.log(data.userId);
+            const clients = rooms.get(data.uid) ?? [];
+            const client = {ws, id: data.userSlug, username: data.username};
             
-            const clients = rooms.get(data.uid) ?? new Map();
-            clients.set(data.userId, ws);
+            const index = clients.findIndex((c) => {
+                return c.id === data.userSlug
+            });
+
+            if(index === -1)
+            {
+                clients.push(client);
+            }
+            else
+            {
+                clients[index] = client;
+            }
             
             rooms.set(data.uid, clients);
         }
@@ -27,11 +38,14 @@ wss.on('connection', (ws) => {
             if(rooms.get(data.uid))
             {
                 const clients = rooms.get(data.uid);
+                const indexAuthor = clients.findIndex((c) => {
+                    return c.id === data.userSlug;
+                });
 
-                clients.forEach((client, key) => {
-                    if (client.readyState === 1)
+                clients.forEach((client) => {
+                    if (client.ws.readyState === 1)
                     {
-                        client.send(JSON.stringify({message: data.message, username: data.username, userId: key}));
+                        client.ws.send(JSON.stringify({message: data.message, username: clients[indexAuthor].username}));
                     }
                 });
             }
