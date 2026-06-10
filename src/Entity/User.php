@@ -74,6 +74,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'user', orphanRemoval: true)]
     private Collection $messages;
 
+    #[ORM\Column(length: 255)]
+    private ?string $city = null;
+
+    #[ORM\Column]
+    private ?float $distanceFilter = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $ageRange = null;
+
     public function __construct()
     {
         $this->conversations1 = new ArrayCollection();
@@ -210,7 +219,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->conversations1->contains($conversations1)) {
             $this->conversations1->add($conversations1);
-            $conversations1->setUser1Id($this);
+            $conversations1->setUser1($this);
         }
 
         return $this;
@@ -220,8 +229,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->conversations1->removeElement($conversations1)) {
             // set the owning side to null (unless already changed)
-            if ($conversations1->getUser1Id() === $this) {
-                $conversations1->setUser1Id(null);
+            if ($conversations1->getUser1() === $this) {
+                $conversations1->setUser1(null);
             }
         }
 
@@ -240,7 +249,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if (!$this->conversations2->contains($conversations2)) {
             $this->conversations2->add($conversations2);
-            $conversations2->setUserId2($this);
+            $conversations2->setUser2($this);
         }
 
         return $this;
@@ -250,8 +259,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->conversations2->removeElement($conversations2)) {
             // set the owning side to null (unless already changed)
-            if ($conversations2->getUser2Id() === $this) {
-                $conversations2->setUserId2(null);
+            if ($conversations2->getUser2() === $this) {
+                $conversations2->setUser2(null);
             }
         }
 
@@ -266,8 +275,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setParticipant(Participant $participant): static
     {
         // set the owning side of the relation if necessary
-        if ($participant->getUserId() !== $this) {
-            $participant->setUserId($this);
+        if ($participant->getUser() !== $this) {
+            $participant->setUser($this);
         }
 
         $this->participant = $participant;
@@ -337,6 +346,42 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $message->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCity(): ?string
+    {
+        return $this->city;
+    }
+
+    public function setCity(string $city): static
+    {
+        $this->city = $city;
+
+        return $this;
+    }
+
+    public function getDistanceFilter(): ?float
+    {
+        return $this->distanceFilter;
+    }
+
+    public function setDistanceFilter(float $distanceFilter): static
+    {
+        $this->distanceFilter = $distanceFilter;
+
+        return $this;
+    }
+
+    public function getAgeRange(): ?string
+    {
+        return $this->ageRange;
+    }
+
+    public function setAgeRange(string $ageRange): static
+    {
+        $this->ageRange = $ageRange;
 
         return $this;
     }

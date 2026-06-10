@@ -43,7 +43,7 @@ class Participant
         return $this->session;
     }
 
-    public function setSessionId(?Session $session): static
+    public function setSession(?Session $session): static
     {
         $this->session = $session;
 

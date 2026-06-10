@@ -35,6 +35,9 @@ class AppFixtures extends Fixture
             ->setBirthDate(new \DateTime("1993-06-01"))
             ->setGender("man")
             ->setSearch("woman")
+            ->setCity("Marseille")
+            ->setDistanceFilter(100)
+            ->setAgeRange("18-40")
         ;
 
         $manager->persist($user);
@@ -53,6 +56,9 @@ class AppFixtures extends Fixture
                 ->setBirthDate(new \DateTime($this->faker->date()))
                 ->setGender(rand(0, 1) == 0 ? "man" : "woman")
                 ->setSearch(rand(0, 1) == 0 ? "man" : "woman")
+                ->setCity($this->faker->city())
+                ->setDistanceFilter(random_int(10, 200))
+                ->setAgeRange("18-40")
             ;
 
             $manager->persist($user);

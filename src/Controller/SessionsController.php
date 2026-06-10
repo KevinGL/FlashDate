@@ -176,7 +176,7 @@ final class SessionsController extends AbstractController
         $participant = new Participant();
 
         $participant->setUser($this->getUser());
-        $participant->setSessionId($session);
+        $participant->setSession($session);
 
         $em->persist($participant);
         $em->flush();

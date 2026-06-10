@@ -113,8 +113,8 @@ class Session
     {
         if ($this->participants->removeElement($participant)) {
             // set the owning side to null (unless already changed)
-            if ($participant->getSessionId() === $this) {
-                $participant->setSessionId(null);
+            if ($participant->getSession() === $this) {
+                $participant->setSession(null);
             }
         }
 
