@@ -29,6 +29,9 @@ class Conversation
     #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'conversationId', orphanRemoval: true)]
     private Collection $messages;
 
+    #[ORM\Column(length: 255)]
+    private ?string $slug = null;
+
     public function __construct()
     {
         $this->messages = new ArrayCollection();
@@ -89,6 +92,18 @@ class Conversation
                 $message->setConversationId(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getSlug(): ?string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(string $slug): static
+    {
+        $this->slug = $slug;
 
         return $this;
     }

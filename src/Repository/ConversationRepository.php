@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Conversation;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -40,4 +41,24 @@ class ConversationRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+
+    public function getConversations(User $currentUser): Array
+    {
+        return $this->createQueryBuilder('c')
+            ->where('c.user1Id = :currentUser')
+            ->orWhere('c.user2Id = :currentUser')
+            ->setParameter('currentUser', $currentUser)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function findBySlug(string $slug): ?Conversation
+    {
+        return $this->createQueryBuilder('c')
+            ->where('c.slug = :slug')
+            ->setParameter('slug', $slug)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

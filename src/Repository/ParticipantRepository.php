@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Participant;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -55,11 +56,11 @@ class ParticipantRepository extends ServiceEntityRepository
         return $res ? true : false;
     }
 
-    public function findByUser(int $userId): array
+    public function findByUser(User $user): array
     {
         return $this->createQueryBuilder('p')
-            ->where('p.userId = :userId')
-            ->setParameter('userId', $userId)
+            ->where('p.userId = :user')
+            ->setParameter('user', $user)
             ->getQuery()
             ->getResult()
         ;

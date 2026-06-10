@@ -111,8 +111,8 @@ final class SessionsController extends AbstractController
                 return $this->json(["message" => $e->getMessage()], 500);
             }
 
-            $startTS += 24 *3600;
-            $endTS += 24 *3600;
+            $startTS += 24 * 3600;
+            $endTS += 24 * 3600;
         }
     
         return $this->json(["message" => 'Sessions ajoutées'], 200);
@@ -196,7 +196,7 @@ final class SessionsController extends AbstractController
 
         $sessions = [];
 
-        $participants = $partRepo->findByUser($this->getUser()->getId());
+        $participants = $partRepo->findByUser($this->getUser());
 
         $imgs =
         [

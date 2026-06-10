@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Échanges avec {{ conv.interlocutor }}{% endblock %}
+
+{% block body %}
+
+<div>
+    <ul id="conv">
+        {% for message in conv.messages %}
+            <li>
+                <p>
+                    {{message.user.username}} : {{ message.content }}
+                </p>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <textarea id="content"></textarea>
+    <button id="send">Envoyer</button>
+</div>
+
+{% block javascripts %}
+    {{ importmap('app') }}
+    <script type="module">
+    import $ from 'jquery';
+        $(document).ready(function() {
+            const url = "{{ ws_url }}";
+            const convId = "{{ conv.slug }}";
+            const userId = "{{ userId }}";
+            const username = "{{ username }}";
+
+            const socket = new WebSocket(url);
+
+            socket.onopen = () => {
+                socket.send(JSON.stringify({type: 'connect', uid: convId, userId}));
+            };
+
+            socket.onerror = (err) => console.error('Erreur de connexion :', err);
+
+            $("#send").click(() => {
+                socket.send(JSON.stringify({type: 'send', uid: convId, message: $("#content")[0].value, username}));
+                $("#content")[0].value = "";
+            })
+
+            socket.onmessage = (message) => {
+                //console.log(JSON.parse(message.data).message);
+                const data = JSON.parse(message.data);
+                $("#conv").append('<li><p>' + data.username + ' : ' + data.message + '</p></li>');
+            };
+        })
+    </script>
+{% endblock %}
+{% endblock %}

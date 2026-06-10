@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vos matchs !{% endblock %}
+
+{% block body %}
+
+<div>
+    <ul>
+        {% for conv in conversations %}
+            <li><a href="{{ path('get_conversation', {slug: conv.slug}) }}">{{ conv.interlocutor }}</a></li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
