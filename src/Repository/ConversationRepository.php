@@ -45,8 +45,8 @@ class ConversationRepository extends ServiceEntityRepository
     public function getConversations(User $currentUser): Array
     {
         return $this->createQueryBuilder('c')
-            ->where('c.user1Id = :currentUser')
-            ->orWhere('c.user2Id = :currentUser')
+            ->where('c.user1 = :currentUser')
+            ->orWhere('c.user2 = :currentUser')
             ->setParameter('currentUser', $currentUser)
             ->getQuery()
             ->getResult()

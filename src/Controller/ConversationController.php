@@ -27,14 +27,14 @@ final class ConversationController extends AbstractController
 
         foreach($conversations as $conv)
         {
-            if($conv->getUser1Id() !== $this->getUser())
+            if($conv->getUser1() !== $this->getUser())
             {
-                $conv->interlocutor = $userRepo->findNameById($conv->getUser1Id());
+                $conv->interlocutor = $userRepo->findNameById($conv->getUser1());
             }
 
             else
             {
-                $conv->interlocutor = $userRepo->findNameById($conv->getUser2Id());
+                $conv->interlocutor = $userRepo->findNameById($conv->getUser2());
             }
         }
     
@@ -70,8 +70,8 @@ final class ConversationController extends AbstractController
         }
 
         $conv = new Conversation();
-        $conv->setUser1Id($user1);
-        $conv->setUserId2($user2);
+        $conv->setUser1($user1);
+        $conv->setUser2($user2);
         $conv->setSlug(hash("sha256", $id1 . '-' . $id2));
 
         try
@@ -97,19 +97,19 @@ final class ConversationController extends AbstractController
 
         $conv = $repo->findBySlug($slug);
 
-        if($conv->getUser1Id() !== $this->getUser() && $conv->getUser2Id() !== $this->getUser())
+        if($conv->getUser1() !== $this->getUser() && $conv->getUser2() !== $this->getUser())
         {
             return $this->redirectToRoute("app_conversations");
         }
 
-        if($conv->getUser1Id() !== $this->getUser())
+        if($conv->getUser1() !== $this->getUser())
         {
-            $conv->interlocutor = $userRepo->findNameById($conv->getUser1Id());
+            $conv->interlocutor = $userRepo->findNameById($conv->getUser1());
         }
 
         else
         {
-            $conv->interlocutor = $userRepo->findNameById($conv->getUser2Id());
+            $conv->interlocutor = $userRepo->findNameById($conv->getUser2());
         }
 
         $userSlug = hash("sha256", $this->getUser()->getId());
@@ -140,7 +140,7 @@ final class ConversationController extends AbstractController
         }
 
         $message = new Message();
-        $message->setConversationId($conv);
+        $message->setConversation($conv);
         $message->setUser($this->getUser());
         $message->setCreatedAt(new \DateTimeImmutable());
         $message->setContent($body["message"]);

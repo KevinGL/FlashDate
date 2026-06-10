@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Participant;
+use App\Entity\Session;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -42,13 +43,13 @@ class ParticipantRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-    public function sessionBooked(int $userId, int $sessionId): bool
+    public function sessionBooked(User $user, Session $session): bool
     {
         $res = $this->createQueryBuilder('p')
-            ->where('p.userId = :userId')
-            ->andWhere('p.sessionId = :sessionId')
-            ->setParameter('userId', $userId)
-            ->setParameter('sessionId', $sessionId)
+            ->where('p.user = :user')
+            ->andWhere('p.session = :session')
+            ->setParameter('user', $user)
+            ->setParameter('session', $session)
             ->getQuery()
             ->getOneOrNullResult()
         ;
@@ -59,7 +60,7 @@ class ParticipantRepository extends ServiceEntityRepository
     public function findByUser(User $user): array
     {
         return $this->createQueryBuilder('p')
-            ->where('p.userId = :user')
+            ->where('p.user = :user')
             ->setParameter('user', $user)
             ->getQuery()
             ->getResult()

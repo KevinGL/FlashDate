@@ -49,19 +49,17 @@ class SessionRepository extends ServiceEntityRepository
         return $params[0] . '-' . $params[1] . '-' . $params[2] . ' ' . $params[3] . ':' . $params[4] . ':' . $params[5];
     }
 
-    public function findIdBySlug(string $slug): ?int
+    public function findIdBySlug(string $slug): ?Session
     {
         $date = $this->slugToDate($slug);        
         $sessionDate = new \DateTime($date);
 
-        $res = $this->createQueryBuilder('s')
+        return $this->createQueryBuilder('s')
             ->where("s.startAt = :date")
             ->setParameter('date', $sessionDate)
             ->getQuery()
             ->getOneOrNullResult()
         ;
-
-        return $res ? $res->getId() : null;
     }
 
     public function findBySlug(string $slug): ?Session

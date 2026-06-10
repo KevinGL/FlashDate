@@ -56,7 +56,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Conversation::class, mappedBy: 'userId2', orphanRemoval: true)]
     private Collection $conversations2;
 
-    #[ORM\OneToOne(mappedBy: 'userId', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
     private ?Participant $participant = null;
 
     #[ORM\Column(length: 255)]

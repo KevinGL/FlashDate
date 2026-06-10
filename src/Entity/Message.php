@@ -22,7 +22,7 @@ class Message
 
     #[ORM\ManyToOne(inversedBy: 'messages')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Conversation $conversationId = null;
+    private ?Conversation $conversation = null;
 
     #[ORM\ManyToOne(inversedBy: 'messages')]
     #[ORM\JoinColumn(nullable: false)]
@@ -57,14 +57,14 @@ class Message
         return $this;
     }
 
-    public function getConversationId(): ?Conversation
+    public function getConversation(): ?Conversation
     {
-        return $this->conversationId;
+        return $this->conversation;
     }
 
-    public function setConversationId(?Conversation $conversationId): static
+    public function setConversation(?Conversation $conversation): static
     {
-        $this->conversationId = $conversationId;
+        $this->conversation = $conversation;
 
         return $this;
     }

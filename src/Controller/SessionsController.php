@@ -49,7 +49,7 @@ final class SessionsController extends AbstractController
         foreach($sessions as $session)
         {
             $session->img = $imgs[$index % 7];
-            $session->bookable = !$partRepo->sessionBooked($this->getUser()->getId(), $session->getId());
+            $session->bookable = !$partRepo->sessionBooked($this->getUser(), $session);
 
             $index++;
         }
@@ -161,14 +161,12 @@ final class SessionsController extends AbstractController
             return $this->json(["message" => "Forbidden"], 403);
         }
 
-        $id = $repo->findIdBySlug($slug);
+        $session = $repo->findIdBySlug($slug);
 
-        if($partRepo->sessionBooked($this->getUser()->getId(), $id))
+        if($partRepo->sessionBooked($this->getUser(), $session))
         {
             return $this->json(["message" => "Forbidden", 403]);
         }
-
-        $session = $repo->find($id);
 
         if(count($session->getParticipants()) >= $session->getMaxParticipants())
         {
@@ -177,7 +175,7 @@ final class SessionsController extends AbstractController
     
         $participant = new Participant();
 
-        $participant->setUserId($this->getUser());
+        $participant->setUser($this->getUser());
         $participant->setSessionId($session);
 
         $em->persist($participant);
@@ -213,7 +211,7 @@ final class SessionsController extends AbstractController
 
         foreach($participants as $part)
         {
-            $session = $part->getSessionId();    
+            $session = $part->getSession();    
         
             $start = $session->getStartAt();
             $start = $start->setTimeZone(new \DateTimeZone('Europe/Paris'));
@@ -226,7 +224,7 @@ final class SessionsController extends AbstractController
             $session->joinable = $current >= $startTs && $current <= $endTs;
             $session->img = $imgs[$index % 7];
         
-            array_push($sessions, $part->getSessionId());
+            array_push($sessions, $part->getSession());
 
             $index++;
         }

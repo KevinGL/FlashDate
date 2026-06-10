@@ -30,7 +30,7 @@ class Session
     /**
      * @var Collection<int, Participant>
      */
-    #[ORM\OneToMany(targetEntity: Participant::class, mappedBy: 'sessionId', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Participant::class, mappedBy: 'session', orphanRemoval: true)]
     private Collection $participants;
 
     public function __construct()

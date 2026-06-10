@@ -17,16 +17,16 @@ class Conversation
 
     #[ORM\ManyToOne(inversedBy: 'conversations1')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $user1Id = null;
+    private ?User $user1 = null;
 
     #[ORM\ManyToOne(inversedBy: 'conversations2')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $user2Id = null;
+    private ?User $user2 = null;
 
     /**
      * @var Collection<int, Message>
      */
-    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'conversationId', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'conversation', orphanRemoval: true)]
     private Collection $messages;
 
     #[ORM\Column(length: 255)]
@@ -42,26 +42,26 @@ class Conversation
         return $this->id;
     }
 
-    public function getUser1Id(): ?User
+    public function getUser1(): ?User
     {
-        return $this->user1Id;
+        return $this->user1;
     }
 
-    public function setUser1Id(?User $user1Id): static
+    public function setUser1(?User $user1): static
     {
-        $this->user1Id = $user1Id;
+        $this->user1 = $user1;
 
         return $this;
     }
 
-    public function getUser2Id(): ?User
+    public function getUser2(): ?User
     {
-        return $this->user2Id;
+        return $this->user2;
     }
 
-    public function setUserId2(?User $user2Id): static
+    public function setUser2(?User $user2): static
     {
-        $this->user2Id = $user2Id;
+        $this->user2 = $user2;
 
         return $this;
     }
@@ -78,7 +78,7 @@ class Conversation
     {
         if (!$this->messages->contains($message)) {
             $this->messages->add($message);
-            $message->setConversationId($this);
+            $message->setConversation($this);
         }
 
         return $this;
@@ -88,8 +88,8 @@ class Conversation
     {
         if ($this->messages->removeElement($message)) {
             // set the owning side to null (unless already changed)
-            if ($message->getConversationId() === $this) {
-                $message->setConversationId(null);
+            if ($message->getConversation() === $this) {
+                $message->setConversation(null);
             }
         }
 

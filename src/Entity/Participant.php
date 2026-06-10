@@ -15,37 +15,37 @@ class Participant
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $userId = null;
+    private ?User $user = null;
 
     #[ORM\ManyToOne(inversedBy: 'participants')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Session $sessionId = null;
+    private ?Session $session = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getUserId(): ?User
+    public function getUser(): ?User
     {
-        return $this->userId;
+        return $this->user;
     }
 
-    public function setUserId(User $userId): static
+    public function setUser(User $user): static
     {
-        $this->userId = $userId;
+        $this->user = $user;
 
         return $this;
     }
 
-    public function getSessionId(): ?Session
+    public function getSession(): ?Session
     {
-        return $this->sessionId;
+        return $this->session;
     }
 
-    public function setSessionId(?Session $sessionId): static
+    public function setSessionId(?Session $session): static
     {
-        $this->sessionId = $sessionId;
+        $this->session = $session;
 
         return $this;
     }
