@@ -103,7 +103,7 @@ class Session
     {
         if (!$this->participants->contains($participant)) {
             $this->participants->add($participant);
-            $participant->setSessionId($this);
+            $participant->setSession($this);
         }
 
         return $this;
