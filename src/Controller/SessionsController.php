@@ -78,25 +78,17 @@ final class SessionsController extends AbstractController
         }
     
         $start = $repo->getLastDate();
-        $start = $start->setTimestamp($start->getTimestamp() + 24 * 3600);
-        $start = $start->setTimeZone(new \DateTimeZone('Europe/Paris'));
-        $start = $start->setTime(19, 30, 0);
-        $startTS = $start->getTimestamp();
 
-        $end = $start;
-        $end = $end->setTime(20, 0, 0);
-        $endTS = $end->getTimestamp();
+        $end = new \DateTimeImmutable();
+        $end = $end->setTimestamp($start->getTimestamp());
+        $end = $end->modify('+ 30 minutes');
 
         for($i = 0 ; $i < 14 ; $i++)
         {
-            $date = new \DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
-            $date = $date->setTimestamp($startTS);
-
             $session = new Session();
-            $session->setStartAt($date);
 
-            $date = $date->setTimestamp($endTS);
-            $session->setEndAt($date);
+            $session->setStartAt($start);
+            $session->setEndAt($end);
             
             $session->setIsActive(true);
             $session->setMaxParticipants(50);
@@ -111,8 +103,8 @@ final class SessionsController extends AbstractController
                 return $this->json(["message" => $e->getMessage()], 500);
             }
 
-            $startTS += 24 * 3600;
-            $endTS += 24 * 3600;
+            $start = $start->modify('+1 days');
+            $end = $end->modify('+1 days');
         }
     
         return $this->json(["message" => 'Sessions ajoutées'], 200);
@@ -215,13 +207,11 @@ final class SessionsController extends AbstractController
         
             $start = $session->getStartAt();
             $start = $start->setTimeZone(new \DateTimeZone('Europe/Paris'));
-            $startTs = $start->getTimestamp();
-            $current = (new \DateTime('now', new \DateTimeZone('Europe/Paris')))->getTimestamp();
+            $current = (new \DateTime('now', new \DateTimeZone('Europe/Paris')));
             $end = $session->getEndAt();
             $end = $end->setTimeZone(new \DateTimeZone('Europe/Paris'));
-            $endTs = $end->getTimestamp();
 
-            $session->joinable = $current >= $startTs && $current <= $endTs;
+            $session->joinable = $current >= $start && $current <= $end;
             $session->img = $imgs[$index % 7];
         
             array_push($sessions, $part->getSession());

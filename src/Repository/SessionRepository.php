@@ -86,7 +86,7 @@ class SessionRepository extends ServiceEntityRepository
             ->getResult()
         ;
 
-        foreach($res as $r)
+        /*foreach($res as $r)
         {
             $start = $r->getStartAt();
             $start = $start->setTimeZone(new \DateTimeZone('Europe/Paris'));
@@ -95,20 +95,67 @@ class SessionRepository extends ServiceEntityRepository
             $end = $r->getEndAt();
             $end = $end->setTimeZone(new \DateTimeZone('Europe/Paris'));
             $r->setEndAt($end);
-        }
+        }*/
     
+        return $res;
+    }
+
+    public function getNextSession(): ?Session
+    {
+        $now = new \DateTime('now', new \DateTimeZone('Europe/Paris'));
+    
+        $res = $this->createQueryBuilder('s')
+            ->where("s.startAt >= :now")
+            ->setMaxResults(1)
+            ->orderBy("s.startAt", "ASC")
+            ->setParameter('now', $now)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+
+        $start = $res->getStartAt();
+        $start = $start->setTimeZone(new \DateTimeZone('Europe/Paris'));
+        $res->setStartAt($start);
+
+        $end = $res->getEndAt();
+        $end = $end->setTimeZone(new \DateTimeZone('Europe/Paris'));
+        $res->setEndAt($end);
+
         return $res;
     }
 
     public function getLastDate()
     {
-        $res = $this->createQueryBuilder('s')
+        $lastSession = $this->createQueryBuilder('s')
             ->orderBy("s.startAt", "DESC")
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult()
         ;
+
+        if(!$lastSession)
+        {
+            $sessionDate = new DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+            $sessionDate = $sessionDate->modify('+ 1 days');
+            $sessionDate = $sessionDate->setTime(21, 30, 0);
+            $utcDate = $sessionDate->setTimezone(new \DateTimeZone('UTC'));
+
+            return $utcDate;
+        }
+
+        $date = new \DateTimeImmutable();
+        $date = $date->setTimestamp($lastSession->getStartAt()->getTimestamp());
+        $date = $date->modify('+ 1 days');
     
-        return $res ? $res->getStartAt() : new DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
+        return $date;
+    }
+
+    public function getByDate(string $date): ?Session
+    {
+        return $this->createQueryBuilder('s')
+            ->where('s.startAt = :date')
+            ->setParameter('date', $date)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 }
