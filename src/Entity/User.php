@@ -80,18 +80,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255)]
     private ?string $ageRange = null;
 
+    #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
+    private ?Participant $participant = null;
+
     /**
-     * @var Collection<int, Participant>
+     * @var Collection<int, Participation>
      */
-    #[ORM\OneToMany(targetEntity: Participant::class, mappedBy: 'user', orphanRemoval: true)]
-    private Collection $participants;
+    #[ORM\OneToMany(targetEntity: Participation::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $participations;
 
     public function __construct()
     {
         $this->conversations1 = new ArrayCollection();
         $this->conversations2 = new ArrayCollection();
         $this->messages = new ArrayCollection();
-        $this->participants = new ArrayCollection();
+        $this->participations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -373,30 +376,47 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, Participant>
-     */
-    public function getParticipants(): Collection
+    public function getParticipant(): ?Participant
     {
-        return $this->participants;
+        return $this->participant;
     }
 
-    public function addParticipant(Participant $participant): static
+    public function setParticipant(Participant $participant): static
     {
-        if (!$this->participants->contains($participant)) {
-            $this->participants->add($participant);
+        // set the owning side of the relation if necessary
+        if ($participant->getUser() !== $this) {
             $participant->setUser($this);
+        }
+
+        $this->participant = $participant;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Participation>
+     */
+    public function getParticipations(): Collection
+    {
+        return $this->participations;
+    }
+
+    public function addParticipation(Participation $participation): static
+    {
+        if (!$this->participations->contains($participation)) {
+            $this->participations->add($participation);
+            $participation->setUser($this);
         }
 
         return $this;
     }
 
-    public function removeParticipant(Participant $participant): static
+    public function removeParticipation(Participation $participation): static
     {
-        if ($this->participants->removeElement($participant)) {
+        if ($this->participations->removeElement($participation)) {
             // set the owning side to null (unless already changed)
-            if ($participant->getUser() === $this) {
-                $participant->setUser(null);
+            if ($participation->getUser() === $this) {
+                $participation->setUser(null);
             }
         }
 

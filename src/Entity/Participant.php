@@ -25,7 +25,7 @@ class Participant
     #[ORM\OneToMany(targetEntity: Daty::class, mappedBy: 'part1')]
     private Collection $daties;
 
-    #[ORM\ManyToOne(inversedBy: 'participants')]
+    #[ORM\OneToOne(inversedBy: 'participant', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
@@ -86,7 +86,7 @@ class Participant
         return $this->user;
     }
 
-    public function setUser(?User $user): static
+    public function setUser(User $user): static
     {
         $this->user = $user;
 
