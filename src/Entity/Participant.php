@@ -25,7 +25,7 @@ class Participant
     #[ORM\OneToMany(targetEntity: Daty::class, mappedBy: 'part1')]
     private Collection $daties;
 
-    #[ORM\OneToOne(inversedBy: 'participant', cascade: ['persist', 'remove'])]
+    #[ORM\ManyToOne(inversedBy: 'participant', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 

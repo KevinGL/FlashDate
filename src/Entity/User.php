@@ -89,6 +89,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Participation::class, mappedBy: 'user', orphanRemoval: true)]
     private Collection $participations;
 
+    #[ORM\Column(length: 255)]
+    private ?string $coord = null;
+
     public function __construct()
     {
         $this->conversations1 = new ArrayCollection();
@@ -419,6 +422,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $participation->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCoord(): ?string
+    {
+        return $this->coord;
+    }
+
+    public function setCoord(string $coord): static
+    {
+        $this->coord = $coord;
 
         return $this;
     }
