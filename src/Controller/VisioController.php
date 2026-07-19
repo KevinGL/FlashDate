@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Controller;
+
+use App\Repository\DatyRepository;
+use App\Repository\ParticipantRepository;
+use App\Repository\SessionRepository;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
+
+final class VisioController extends AbstractController
+{
+    #[Route('/visio/session/{id_session}', name: 'visio_session')]
+    public function index(int $id_session, DatyRepository $repo, SessionRepository $sessionRepo, ParticipantRepository $partRepo): Response
+    {
+        $session = $sessionRepo->find($id_session);
+        $parts = $partRepo->findByUser($this->getUser());
+        $part = array_filter($parts, function ($p) use ($session) {
+            return $p->getSession() === $session;
+        })[0];
+        $daties = $repo->findByPart($part);
+
+        //dd($daties);
+    
+        return $this->render('visio/daties.html.twig', [
+            'daties' => $daties,
+        ]);
+    }
+
+    #[Route('/visio/daty/{id_daty}', name: 'visio_daty')]
+    public function visio(int $id_daty, DatyRepository $repo): Response
+    {
+        $daty = $repo->find($id_daty);
+    
+        return $this->render('visio/visio.html.twig', [
+            'daty' => $daty
+        ]);
+    }
+}

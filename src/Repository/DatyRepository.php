@@ -3,6 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\Daty;
+use App\Entity\Participant;
+use App\Entity\User;
+use App\Entity\Session;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -40,4 +43,25 @@ class DatyRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+
+    public function findByPart(Participant $part): array
+    {
+        return $this->createQueryBuilder('d')
+            ->where('d.part1 = :part')
+            ->orWhere('d.part2 = :part')
+            ->setParameter('part', $part)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    public function findBySession(Session $session): ?Daty
+    {
+        return $this->createQueryBuilder('d')
+            ->where('d.session = :session')
+            ->setParameter('session', $session)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
 }

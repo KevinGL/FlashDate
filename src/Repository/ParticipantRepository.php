@@ -66,4 +66,16 @@ class ParticipantRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+
+    public function findByUserAndSession(User $user, Session $session): ?Participant
+    {
+        return $this->createQueryBuilder('p')
+            ->where('p.user = :user')
+            ->andWhere('p.session = :session')
+            ->setParameter('user', $user)
+            ->setParameter('session', $session)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
 }

@@ -6,6 +6,8 @@ use App\Entity\Daty;
 use App\Message\MatchMakerMessage;
 use App\Repository\SessionRepository;
 use BcMath\Number;
+use DateTime;
+use DateTimeZone;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Validator\Constraints\Date;
@@ -96,8 +98,11 @@ final class MatchMakerMessageHandler
         return $earthRadius * $c;
     }
 
-    private function createDaties(array $parts, bool $sameGender): void
+    private function createDaties(array $parts, bool $sameGender, \DateTimeImmutable $date): void
     {
+        $datyDuration = 8;
+        $gap = 1;
+    
         if($sameGender)
         {
             for($i = 0 ; $i < count($parts) ; $i++)
@@ -107,6 +112,9 @@ final class MatchMakerMessageHandler
                 $distMax1 = $user1->getDistanceFilter();
                 $ageRange1 = explode('-', $user1->getAgeRange());
                 $coord1 = $user1->getCoord();
+
+                $hour = 21;
+                $minute = 30;
 
                 for($j = 0 ; $j < count($parts) ; $j++)
                 {
@@ -130,11 +138,31 @@ final class MatchMakerMessageHandler
                             continue;
                         }
 
+                        if($hour === 22 && $minute > 15)
+                        {
+                            continue;
+                        }
+
                         $daty = new Daty();
                         $daty->setPart1($parts[$i]);
                         $daty->setPart2($parts[$j]);
 
+                        $date = $date->setTime($hour, $minute, 0);
+                        $daty->setStartAt($date);
+                        
+                        $date = $date->setTime($hour, $minute + $datyDuration, 0);
+                        $daty->setEndAt($date);
+
                         $this->em->persist($daty);
+
+                        ////////////////////////////////
+
+                        $minute += $datyDuration + $gap;
+                        if($minute > 59)
+                        {
+                            $minute -= 60;
+                            $hour++;
+                        }
                     }
                 }
             }
@@ -160,6 +188,9 @@ final class MatchMakerMessageHandler
                 $ageRange1 = explode('-', $user1->getAgeRange());
                 $coord1 = $user1->getCoord();
 
+                $hour = 21;
+                $minute = 30;
+
                 for($j = 0 ; $j < count($women) ; $j++)
                 {
                     $user2 = $women[$j]->getUser();
@@ -180,11 +211,31 @@ final class MatchMakerMessageHandler
                         continue;
                     }
 
+                    if($hour === 22 && $minute > 15)
+                    {
+                        continue;
+                    }
+
                     $daty = new Daty();
-                    $daty->setPart1($parts[$i]);
-                    $daty->setPart2($parts[$j]);
+                    $daty->setPart1($men[$i]);
+                    $daty->setPart2($women[$j]);
+
+                    $date = $date->setTime($hour, $minute, 0);
+                    $daty->setStartAt($date);
+                    
+                    $date = $date->setTime($hour, $minute + $datyDuration, 0);
+                    $daty->setEndAt($date);
 
                     $this->em->persist($daty);
+
+                    ////////////////////////////////
+
+                    $minute += $datyDuration + $gap;
+                    if($minute > 59)
+                    {
+                        $minute -= 60;
+                        $hour++;
+                    }
                 }
             }
         }
@@ -194,6 +245,10 @@ final class MatchMakerMessageHandler
     {
         $this->em->clear();
         $participants = $this->sessionsRepo->getNextSession()->getParticipants()->toArray();
+        
+        $date = new \DateTimeImmutable();
+        $date = $date->setTimezone(new DateTimeZone('Europe/Paris'));
+        $date = $this->sessionsRepo->getNextSession()->getStartAt();
 
         $men_men = array_filter($participants, function ($part) {
             return $part->getUser()->getGender() === 'man' && $part->getUser()->getSearch() === 'man';
@@ -211,9 +266,9 @@ final class MatchMakerMessageHandler
         $this->sortByPriority($women_women);
         $this->sortByPriority($women_men);
 
-        $this->createDaties($men_men, true);
-        $this->createDaties($women_women, true);
-        $this->createDaties($women_men, false);
+        $this->createDaties($men_men, true, $date);
+        $this->createDaties($women_women, true, $date);
+        $this->createDaties($women_men, false, $date);
 
         $this->em->flush();
     }

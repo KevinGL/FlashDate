@@ -7,6 +7,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Message\MatchMakerMessage;
+use App\Repository\DatyRepository;
+use App\Repository\ParticipantRepository;
 use App\Repository\SessionRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -23,10 +25,20 @@ final class HomeController extends AbstractController
         ]);
     }
 
-    #[Route('/test-cron')]
+    #[Route('/test_cron')]
     public function testCron(MessageBusInterface $bus): Response
     {
         $bus->dispatch(new MatchMakerMessage());
+
+        return new Response('Message envoyé manuellement dans la file !');
+    }
+
+    #[Route('/see_daties')]
+    public function seeDaties(ParticipantRepository $partRepo, SessionRepository $sessionRepo, DatyRepository $repo): Response
+    {
+        $part = $partRepo->findByUserAndSession($this->getUser(), $sessionRepo->getNextSession());
+        $daties = $repo->findByPart($part);
+        dd($daties);
 
         return new Response('Message envoyé manuellement dans la file !');
     }
