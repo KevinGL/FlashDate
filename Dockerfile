@@ -28,7 +28,7 @@ COPY composer.json composer.lock ./
 COPY . /var/www/html
 
 # Lancer composer
-RUN APP_ENV=prod composer install --no-dev --optimize-autoloader -vvv
+RUN APP_ENV=prod composer install --no-dev --optimize-autoloader --no-scripts
 
 # Installer les dépendances du sous-répertoire WebSocket
 RUN cd ws && npm install
