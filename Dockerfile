@@ -30,6 +30,7 @@ COPY . /var/www/html
 # Lancer composer
 RUN APP_ENV=prod composer install --no-dev --optimize-autoloader --no-scripts
 RUN php bin/console importmap:install
+RUN php bin/console asset-map:compile
 
 # Installer les dépendances du sous-répertoire WebSocket
 RUN cd ws && npm install
