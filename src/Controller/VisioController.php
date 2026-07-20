@@ -32,9 +32,21 @@ final class VisioController extends AbstractController
     public function visio(int $id_daty, DatyRepository $repo): Response
     {
         $daty = $repo->find($id_daty);
+        $uidClient = hash("sha256", $daty->getId() . '-' . $this->getUser()->getId());
+        $uid = hash("sha256", $daty->getId());
+
+        $initiator = true;
+        if($daty->getPart2()->getUser()->getId() === $this->getUser()->getId())
+        {
+            $initiator = false;
+        }
     
         return $this->render('visio/visio.html.twig', [
-            'daty' => $daty
+            'daty' => $daty,
+            'ws_url' => $_ENV['WEB_SOCKET_URL'],
+            'uidClient' => $uidClient,
+            'uid' => $uid,
+            'initiator' => $initiator
         ]);
     }
 }
